@@ -1,0 +1,51 @@
+/* Resetar margens e paddings para todo o conteúdo */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;  /* Garantir que o HTML e o body ocupem 100% da altura da janela */
+  width: 100%;   /* Garantir que o HTML e o body ocupem 100% da largura da janela */
+}
+
+/* Garantir que o App e o App-header ocupem 100% da altura da tela */
+.App {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.App-header {
+  background-color: #282c34; /* Cor de fundo da área principal */
+  min-height: 100vh; /* Garante que o header ocupe pelo menos a altura total da tela */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+/* Ajustar qualquer animação, se necessário */
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
