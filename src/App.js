@@ -9,7 +9,7 @@ import ComodatoInter from './pages/ComodatoInter'; // Página de comodato intera
 
 function App() {
   const [isOpen, setIsOpen] = useState(true); // Controle da barra lateral
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Controle de login
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('loggedUser')); // Estado inicial baseado no localStorage
   const navigate = useNavigate();
   const location = useLocation(); // Usado para pegar a URL atual
 
@@ -18,14 +18,11 @@ function App() {
   };
 
   useEffect(() => {
-    // Verifique o login a partir do localStorage quando o componente for montado
-    const loggedUser = localStorage.getItem('loggedUser');
-    if (loggedUser) {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
+    // Redireciona para login se o usuário não estiver logado
+    if (!isLoggedIn && location.pathname !== '/' && location.pathname !== '/comodato') {
+      navigate('/');
     }
-  }, []);
+  }, [isLoggedIn, location.pathname, navigate]);
 
   // Função para realizar login
   const handleLogin = (user) => {
