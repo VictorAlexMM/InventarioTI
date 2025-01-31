@@ -414,27 +414,27 @@ function Estoque() {
 
   const handleImport = async (e) => {
     e.preventDefault();
-
+  
     if (!csvFile) {
       alert("Por favor, selecione um arquivo CSV.");
       return;
     }
-
+  
     Papa.parse(csvFile, {
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
         const csvData = results.data;
-
+  
         const formattedData = [];
         for (const [index, item] of csvData.entries()) {
           const errors = [];
-
+  
           // Validação dos campos obrigatórios
           if (!item.Patrimônio) errors.push("Patrimônio");
           if (!item.Empresa) errors.push("Empresa");
           if (!item["Centro de Custo"]) errors.push("Centro de Custo");
-
+  
           // Validação de datas (opcional, mas precisa estar no formato correto se preenchida)
           if (
             item["Data NF"] &&
@@ -442,15 +442,26 @@ function Estoque() {
           ) {
             errors.push("Data NF (formato inválido)");
           }
-
-          // Validação de outros campos específicos
-          if (
-            item.Compartilhada &&
-            !["Sim", "Não", "sim", "não"].includes(item.Compartilhada)
-          ) {
-            errors.push("Compartilhada (valores permitidos: Sim ou Não)");
+  
+          // Validação de campos específicos (Compartilhada, Office, Usuários)
+          const validValues = ["sim", "não", "na"];
+          const isValidValue = (value) =>
+            validValues.includes(value?.toLowerCase());
+  
+          if (item.Compartilhada && !isValidValue(item.Compartilhada)) {
+            errors.push(
+              "Compartilhada (valores permitidos: Sim, Não ou NA)"
+            );
           }
-
+  
+          if (item.Office && !isValidValue(item.Office)) {
+            errors.push("Office (valores permitidos: Sim, Não ou NA)");
+          }
+  
+          if (item.Usuários && !isValidValue(item.Usuários)) {
+            errors.push("Usuários (valores permitidos: Sim, Não ou NA)");
+          }
+  
           // Se houver erros, exibe o alerta e indica qual linha foi afetada
           if (errors.length > 0) {
             alert(
@@ -460,13 +471,13 @@ function Estoque() {
             );
             return;
           }
-
+  
           // Transformação dos dados para o formato esperado
           const setor = centroDeCusto[item["Centro de Custo"]] || "";
           const dataNfIso = item["Data NF"]
             ? moment(item["Data NF"], "DD/MM/YYYY", true).toISOString()
             : "";
-
+  
           formattedData.push({
             patrimonio: item.Patrimônio || "",
             empresa: item.Empresa || "",
@@ -475,10 +486,10 @@ function Estoque() {
             tipo: item.Tipo || "",
             marca: item.Marca || "",
             modelo: item.Modelo || "",
-            office: item.Office || "",
+            office: item.Office?.toLowerCase() === "sim" ? "Sim" : "Não",
             compartilhada:
               item.Compartilhada?.toLowerCase() === "sim" ? "Sim" : "Não",
-            usuarios: item.Usuários || "",
+            usuarios: item.Usuários?.toLowerCase() === "sim" ? "Sim" : "Não",
             planta: item.Planta || "",
             tipoCompra: item["Tipo Compra"] || "",
             fornecedor: item.Fornecedor || "",
@@ -495,9 +506,7 @@ function Estoque() {
             entradaContabil: item["Entrada Contábil"] || "",
             garantia: item.Garantia || "",
             comodato:
-              item.Comodato?.toLowerCase() === "sim".toLowerCase()
-                ? "Sim"
-                : "Não",
+              item.Comodato?.toLowerCase() === "sim" ? "Sim" : "Não",
             criadoPor: getCookie("username") || "",
             alteradoPor: getCookie("username") || "",
             dataModificacao: "",
@@ -506,7 +515,7 @@ function Estoque() {
             ChamadoSolicitacao: item.ChamadoSolicitacao || "",
           });
         }
-
+  
         try {
           const response = await axios.post(
             "http://mao-s038:4001/inventario/importar",
@@ -530,6 +539,7 @@ function Estoque() {
       },
     });
   };
+  
 
   const downloadExampleCSV = () => {
     const csvHeader =
@@ -1379,6 +1389,7 @@ function Estoque() {
                   <option value="MANAUS B3">MANAUS B3</option>
                   <option value="MANAUS IMC">MANAUS IMC</option>
                   <option value="MANAUS IAC">MANAUS IAC</option>
+                  <option value="Maringá">Maringá</option>
                 </select>
               </div>
 

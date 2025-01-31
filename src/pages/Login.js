@@ -24,14 +24,14 @@ const Login = ({ setIsLoggedIn }) => {
   const handleLogin = async () => {
     setError(null);
     setLoading(true);
-
+  
     const isUsernameValid = await validateUsername(username);
     if (!isUsernameValid) {
       setError("Username não encontrado");
       setLoading(false);
       return;
     }
-
+  
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const response = await axios.post(
@@ -41,14 +41,15 @@ const Login = ({ setIsLoggedIn }) => {
           password,
         }
       );
-
-      localStorage.setItem("loggedUser", JSON.stringify({ username }));
-      setIsLoggedIn(true);
+  
+      // Certifique-se de salvar o username como string no localStorage
+      localStorage.setItem("loggedUser", username); // Aqui salva o valor correto
+      setIsLoggedIn(true); // Apenas atualiza o estado, sem alterar o localStorage
       navigate("/portal/home");
     } catch (error) {
       if (error.response) {
         const { error: errorMessage } = error.response.data;
-
+  
         if (errorMessage === "Senha incorreta") {
           setError("A senha fornecida está incorreta. Tente novamente.");
         } else {

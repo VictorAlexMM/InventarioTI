@@ -6,6 +6,7 @@ import Login from './pages/Login'; // Página de login
 import Estoque from './pages/Estoque'; // Página de estoque
 import Comodato from './pages/Comodato'; // Página de comodato
 import ComodatoInter from './pages/ComodatoInter'; // Página de comodato interativo
+import AdminPage from './pages/Admin';
 
 function App() {
   const [isOpen, setIsOpen] = useState(true); // Controle da barra lateral
@@ -64,6 +65,10 @@ function App() {
           <Route
             path="/portal/estoque"
             element={isLoggedIn ? <Estoque /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/portal/admin"
+            element={isLoggedIn ? <AdminPage /> : <Navigate to="/" />}
           />
           
           {/* Rota de Comodato - Acessível sem login */}
