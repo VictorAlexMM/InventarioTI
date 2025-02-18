@@ -9,31 +9,37 @@ const Login = ({ setIsLoggedIn }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Função para validar o nome de usuário
   const validateUsername = async (username) => {
     try {
       const response = await axios.post("http://mao-s038:5000/validateUser", {
         username,
       });
-      return response.data.valid;
+      return response.data; // Retorna o objeto completo do usuário
     } catch (error) {
       setError("Erro ao validar username");
-      return false;
+      return null;
     }
   };
 
+  // Função para lidar com o login
   const handleLogin = async () => {
     setError(null);
     setLoading(true);
-  
-    const isUsernameValid = await validateUsername(username);
-    if (!isUsernameValid) {
+
+    // Valida o nome de usuário
+    const userData = await validateUsername(username);
+    if (!userData || !userData.valid) {
       setError("Username não encontrado");
       setLoading(false);
       return;
     }
-  
+
     try {
+      // Simula um delay para o carregamento
       await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Faz a autenticação do usuário
       const response = await axios.post(
         "http://10.0.11.55:31636/api/v1/AuthAd",
         {
@@ -41,15 +47,23 @@ const Login = ({ setIsLoggedIn }) => {
           password,
         }
       );
-  
-      // Certifique-se de salvar o username como string no localStorage
-      localStorage.setItem("loggedUser", username); // Aqui salva o valor correto
-      setIsLoggedIn(true); // Apenas atualiza o estado, sem alterar o localStorage
+
+      // Extrai o perfil do usuário da resposta do validateUsername
+      const { perfil } = userData.usuario;
+
+      // Salva o username e o perfil no localStorage
+      localStorage.setItem("loggedUser", username);
+      localStorage.setItem("userProfile", perfil);
+
+      // Atualiza o estado de login
+      setIsLoggedIn(true);
+
+      // Navega para a página inicial
       navigate("/portal/home");
     } catch (error) {
       if (error.response) {
         const { error: errorMessage } = error.response.data;
-  
+
         if (errorMessage === "Senha incorreta") {
           setError("A senha fornecida está incorreta. Tente novamente.");
         } else {
@@ -63,6 +77,7 @@ const Login = ({ setIsLoggedIn }) => {
     }
   };
 
+  // Função para lidar com a tecla "Enter"
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       handleLogin();

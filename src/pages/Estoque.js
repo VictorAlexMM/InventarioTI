@@ -227,32 +227,34 @@ function Estoque() {
 
   const downloadByPeriod = async (planta, startDate, endDate) => {
     try {
+      // Cria os parâmetros para a requisição. Se a opção for "Todas as Plantas",
+      // não enviamos o parâmetro 'planta' para a API.
+      const params = { startDate, endDate };
+      if (planta !== "Todas as Plantas") {
+        params.planta = planta;
+      }
+
       const response = await axios.get(
         "http://mao-s038:4001/inventario/exportar",
-        {
-          params: {
-            planta: planta,
-            startDate: startDate,
-            endDate: endDate,
-          },
-        }
+        { params }
       );
 
       const data = response.data;
       console.log("Dados retornados da API:", data);
 
-      // Filtra os dados baseado nas datas de criação e na planta
+      // Filtra os dados pela data e, caso não seja "Todas as Plantas", também filtra pela planta.
       const filteredData = data.filter((item) => {
-        const createdAt = moment(item.dataCriacao); // A data de criação do item
+        const createdAt = moment(item.dataCriacao);
         const isInDateRange = createdAt.isBetween(
           moment(startDate),
           moment(endDate),
           "day",
           "[]"
         );
-        const isInSelectedPlanta = item.planta === planta; // Verifica se a planta do item é a selecionada
+        const isInSelectedPlanta =
+          planta === "Todas as Plantas" || item.planta === planta;
 
-        return isInDateRange && isInSelectedPlanta; // Retorna true se estiver dentro do intervalo e na planta selecionada
+        return isInDateRange && isInSelectedPlanta;
       });
 
       if (filteredData.length === 0) {
@@ -414,27 +416,27 @@ function Estoque() {
 
   const handleImport = async (e) => {
     e.preventDefault();
-  
+
     if (!csvFile) {
       alert("Por favor, selecione um arquivo CSV.");
       return;
     }
-  
+
     Papa.parse(csvFile, {
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
         const csvData = results.data;
-  
+
         const formattedData = [];
         for (const [index, item] of csvData.entries()) {
           const errors = [];
-  
+
           // Validação dos campos obrigatórios
           if (!item.Patrimônio) errors.push("Patrimônio");
           if (!item.Empresa) errors.push("Empresa");
           if (!item["Centro de Custo"]) errors.push("Centro de Custo");
-  
+
           // Validação de datas (opcional, mas precisa estar no formato correto se preenchida)
           if (
             item["Data NF"] &&
@@ -442,26 +444,24 @@ function Estoque() {
           ) {
             errors.push("Data NF (formato inválido)");
           }
-  
+
           // Validação de campos específicos (Compartilhada, Office, Usuários)
           const validValues = ["sim", "não", "na"];
           const isValidValue = (value) =>
             validValues.includes(value?.toLowerCase());
-  
+
           if (item.Compartilhada && !isValidValue(item.Compartilhada)) {
-            errors.push(
-              "Compartilhada (valores permitidos: Sim, Não ou NA)"
-            );
+            errors.push("Compartilhada (valores permitidos: Sim, Não ou NA)");
           }
-  
+
           if (item.Office && !isValidValue(item.Office)) {
             errors.push("Office (valores permitidos: Sim, Não ou NA)");
           }
-  
+
           if (item.Usuários && !isValidValue(item.Usuários)) {
             errors.push("Usuários (valores permitidos: Sim, Não ou NA)");
           }
-  
+
           // Se houver erros, exibe o alerta e indica qual linha foi afetada
           if (errors.length > 0) {
             alert(
@@ -471,13 +471,13 @@ function Estoque() {
             );
             return;
           }
-  
+
           // Transformação dos dados para o formato esperado
           const setor = centroDeCusto[item["Centro de Custo"]] || "";
           const dataNfIso = item["Data NF"]
             ? moment(item["Data NF"], "DD/MM/YYYY", true).toISOString()
             : "";
-  
+
           formattedData.push({
             patrimonio: item.Patrimônio || "",
             empresa: item.Empresa || "",
@@ -505,8 +505,7 @@ function Estoque() {
             dataNext: "",
             entradaContabil: item["Entrada Contábil"] || "",
             garantia: item.Garantia || "",
-            comodato:
-              item.Comodato?.toLowerCase() === "sim" ? "Sim" : "Não",
+            comodato: item.Comodato?.toLowerCase() === "sim" ? "Sim" : "Não",
             criadoPor: getCookie("username") || "",
             alteradoPor: getCookie("username") || "",
             dataModificacao: "",
@@ -515,7 +514,7 @@ function Estoque() {
             ChamadoSolicitacao: item.ChamadoSolicitacao || "",
           });
         }
-  
+
         try {
           const response = await axios.post(
             "http://mao-s038:4001/inventario/importar",
@@ -539,7 +538,6 @@ function Estoque() {
       },
     });
   };
-  
 
   const downloadExampleCSV = () => {
     const csvHeader =
@@ -641,7 +639,8 @@ function Estoque() {
     }
 
     const filteredEstoque = estoque.filter(
-      (item) => item.planta === selectedPlanta
+      (item) =>
+        selectedPlanta === "Todas as Plantas" || item.planta === selectedPlanta
     );
 
     if (filteredEstoque.length === 0) {
@@ -1654,6 +1653,7 @@ function Estoque() {
                 className="border rounded p-2 w-full"
               >
                 <option value="">Selecione uma planta</option>
+                <option value="Todas as Plantas">Todas as Plantas</option>
                 {plants.map((planta, index) => (
                   <option key={index} value={planta.planta}>
                     {planta.planta}
