@@ -20,7 +20,7 @@ const Comodato = () => {
   useEffect(() => {
     const fetchSystemInfo = async () => {
       try {
-        const response = await fetch("http://mao-s038:3001/api/system-info");
+        const response = await fetch("http://PC101961:3001/api/system-info");
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -111,7 +111,7 @@ const Comodato = () => {
         return;
       }
 
-      const response = await fetch("http://mao-s038:3003/comodato", {
+      const response = await fetch("http://PC101961:3003/comodato", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

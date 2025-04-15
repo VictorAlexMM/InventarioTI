@@ -44,7 +44,7 @@ const AdminPage = () => {
     if (!searchTerm.trim()) return;
     try {
       const response = await fetch(
-        `http://localhost:4001/buscar-patrimonio?search=${searchTerm}`
+        `http://PC101961:4001/buscar-patrimonio?search=${searchTerm}`
       );
       const data = await response.json();
       if (!Array.isArray(data) || data.length === 0) {
@@ -86,7 +86,7 @@ const AdminPage = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:4001/api/atualizar-patrimonio",
+        "http://PC101961:4001/api/atualizar-patrimonio",
         {
           method: "PUT",
           headers: {
@@ -125,7 +125,7 @@ const AdminPage = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/add-usuario", {
+      const response = await fetch("http://PC101961:5000/add-usuario", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -145,6 +145,34 @@ const AdminPage = () => {
     } catch (error) {
       console.error("Erro ao adicionar usuário:", error);
       alert("Erro ao adicionar usuário.");
+    }
+  };
+
+  // Função para enviar comodato
+  const handleEnviarComodato = async () => {
+    try {
+      const response = await fetch(
+        "https://prod-11.brazilsouth.logic.azure.com:443/workflows/9f942c82d0ef4608873cc66bc4c2d72f/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xLrzv-wH_Lri5pPnECHilOqHiCn22oqTJMuwYZUpwCs",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}), // Enviar um objeto vazio como corpo da requisição
+        }
+      );
+
+      if (response.ok) {
+        alert("Comodato enviado com sucesso!");
+      } else {
+        const errorData = await response.json();
+        alert(
+          `Erro ao enviar comodato: ${errorData.error || "Erro desconhecido"}`
+        );
+      }
+    } catch (error) {
+      console.error("Erro ao enviar comodato:", error);
+      alert("Erro ao enviar comodato.");
     }
   };
 
@@ -169,6 +197,14 @@ const AdminPage = () => {
             className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             <FontAwesomeIcon icon={faSearch} /> Buscar Patrimônio
+          </button>
+
+          {/* Botão para enviar comodato */}
+          <button
+            onClick={handleEnviarComodato}
+            className="p-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+          >
+            Enviar Comodato
           </button>
         </div>
 

@@ -20,7 +20,7 @@ const Dashboard = () => {
   const fetchData = async () => {
     try {
       const response = await axios.get(
-        "http://mao-s038:4001/dashboard/contagem",
+        "http://PC101961:4001/dashboard/contagem",
         {
           params: { planta: selectedPlanta },
         }
@@ -34,7 +34,7 @@ const Dashboard = () => {
   const fetchRecentChanges = async () => {
     try {
       const response = await axios.get(
-        "http://mao-s038:4001/dashboard/recent-changes",
+        "http://PC101961:4001/dashboard/recent-changes",
         {
           params: { planta: selectedPlanta },
         }
@@ -48,7 +48,7 @@ const Dashboard = () => {
   const fetchPlantas = async () => {
     try {
       const response = await axios.get(
-        "http://mao-s038:4001/dashboard/plantas"
+        "http://PC101961:4001/dashboard/plantas"
       );
       setPlantas(response.data);
     } catch (error) {
@@ -110,12 +110,15 @@ const Dashboard = () => {
           onChange={handlePlantaChange}
           className="block w-48 p-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
         >
-          <option value="GERAL">GERAL</option> {/* Opção adicionada */}
-          {plantas.map((planta) => (
-            <option key={planta.planta} value={planta.planta}>
-              {planta.planta}
-            </option>
-          ))}
+          <option value="GERAL">GERAL</option>{" "}
+          {/* Opção fixa mantida no topo */}
+          {plantas
+            .sort((a, b) => a.planta.localeCompare(b.planta)) // Ordena alfabeticamente
+            .map((planta) => (
+              <option key={planta.planta} value={planta.planta}>
+                {planta.planta}
+              </option>
+            ))}
         </select>
       </div>
 

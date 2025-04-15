@@ -9,65 +9,55 @@ const Login = ({ setIsLoggedIn }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Função para validar o nome de usuário
-  const validateUsername = async (username) => {
-    try {
-      const response = await axios.post("http://mao-s038:5000/validateUser", {
-        username,
-      });
-      return response.data; // Retorna o objeto completo do usuário
-    } catch (error) {
-      setError("Erro ao validar username");
-      return null;
-    }
-  };
-
-  // Função para lidar com o login
   const handleLogin = async () => {
     setError(null);
     setLoading(true);
 
-    // Valida o nome de usuário
-    const userData = await validateUsername(username);
-    if (!userData || !userData.valid) {
-      setError("Username não encontrado");
-      setLoading(false);
-      return;
-    }
-
     try {
-      // Simula um delay para o carregamento
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Faz a autenticação do usuário
-      const response = await axios.post(
-        "http://10.0.11.55:31636/api/v1/AuthAd",
-        {
-          username,
-          password,
-        }
+      // Valida o username
+      const responseValidate = await axios.post(
+        "http://PC101961:5000/validateUser",
+        { username }
       );
 
-      // Extrai o perfil do usuário da resposta do validateUsername
-      const { perfil } = userData.usuario;
+      if (!responseValidate.data.valid) {
+        setError("Username não encontrado");
+        setLoading(false);
+        return;
+      }
 
-      // Salva o username e o perfil no localStorage
-      localStorage.setItem("loggedUser", username);
-      localStorage.setItem("userProfile", perfil);
+      const userProfile = responseValidate.data.usuario.perfil; // Exemplo: "admin" ou "aud"
+      const userPlanta = responseValidate.data.usuario.planta; // Extract planta from response
+      console.log("Perfil do usuário:", userProfile, "Planta:", userPlanta);
 
-      // Atualiza o estado de login
-      setIsLoggedIn(true);
+      // Salva o username, perfil, e planta no localStorage
+      localStorage.setItem("loggedUser", String(username));
+      localStorage.setItem("userProfile", userProfile);
+      localStorage.setItem("userPlanta", userPlanta);
 
-      // Navega para a página inicial
+      // Se o perfil for admin ou aud, pula a autenticação externa
+      if (userProfile === "admin" || userProfile === "aud") {
+        setIsLoggedIn(username);
+        navigate("/portal/home");
+        setLoading(false);
+        return;
+      }
+
+      // Autentica o usuário (para perfis que não são admin ou aud)
+      const responseAuth = await axios.post(
+        "http://10.0.11.55:31636/api/v1/AuthAd",
+        { username, password, planta: userPlanta } // Include planta in the auth request
+      );
+
+      setIsLoggedIn(username);
       navigate("/portal/home");
     } catch (error) {
       if (error.response) {
         const { error: errorMessage } = error.response.data;
-
         if (errorMessage === "Senha incorreta") {
           setError("A senha fornecida está incorreta. Tente novamente.");
         } else {
-          setError(errorMessage || "User ou senha errada.");
+          setError(errorMessage || "Usuário ou senha inválidos.");
         }
       } else {
         setError("Erro ao fazer login. Verifique sua conexão.");
@@ -77,7 +67,6 @@ const Login = ({ setIsLoggedIn }) => {
     }
   };
 
-  // Função para lidar com a tecla "Enter"
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       handleLogin();
@@ -103,7 +92,7 @@ const Login = ({ setIsLoggedIn }) => {
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              onKeyDown={handleKeyDown} // Adiciona suporte para pressionar Enter
+              onKeyDown={handleKeyDown}
               required
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -114,7 +103,7 @@ const Login = ({ setIsLoggedIn }) => {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={handleKeyDown} // Adiciona suporte para pressionar Enter
+              onKeyDown={handleKeyDown}
               required
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />

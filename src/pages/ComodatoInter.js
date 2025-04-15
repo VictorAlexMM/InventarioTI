@@ -87,7 +87,7 @@ const Comodato = () => {
 
     try {
       // Enviar os dados para o backend
-      const response = await fetch("http://mao-s038:4001/comodatointer", {
+      const response = await fetch("http://PC101961:4001/comodatointer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

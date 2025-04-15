@@ -7,6 +7,7 @@ import {
   faUserShield,
   faSignOutAlt,
   faNetworkWired,
+  faIdBadge,
 } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -15,19 +16,39 @@ const Sidenav = () => {
 
   // Obtém o nome do usuário e o perfil do localStorage
   const loggedUser = localStorage.getItem("loggedUser");
-  const userProfile = localStorage.getItem("userProfile");
+  const userProfile = localStorage.getItem("userProfile") || "guest";
 
-  // Define os itens do menu
-  const menuItems = [
+  // Define todos os itens do menu
+  const allMenuItems = [
     { name: "Dashboard", icon: faTachometerAlt, link: "/portal/home" },
-    { name: "Inventário", icon: faBoxes, link: "/portal/estoque" },
+    { name: "Inventario", icon: faBoxes, link: "/portal/inventario" },
     { name: "Comodato", icon: faClipboardList, link: "/portal/comodato-inter" },
-    // Adiciona a opção "Admin" apenas se o perfil for 'admin'
-    ...(userProfile === "admin"
-      ? [{ name: "Admin", icon: faUserShield, link: "/portal/admin" }]
-      : []),
+    { name: "Licencas", icon: faIdBadge, link: "/portal/licencas" },
+    { name: "Estoque", icon: faBoxes, link: "/portal/estoque" },
     { name: "Switch", icon: faNetworkWired, link: "/portal/switch" },
+    { name: "Admin", icon: faUserShield, link: "/portal/admin" },
   ];
+
+  // Filtra os itens do menu com base no perfil do usuário
+  const menuItems = allMenuItems.filter((item) => {
+    if (userProfile === "aud") {
+      // Auditoria vê apenas "Dashboard" e "Inventário"
+      return item.name === "Dashboard" || item.name === "Inventário";
+    } else if (userProfile === "admin") {
+      // Admin vê tudo
+      return true;
+    } else if (userProfile === "user") {
+      // User vê tudo menos "Admin", "Licenças" e "Switch"
+      return (
+        item.name !== "Admin" &&
+        item.name !== "Licenças" &&
+        item.name !== "Switch"
+      );
+    } else {
+      // Perfil padrão (ex.: "guest") vê tudo menos "Admin"
+      return item.name !== "Admin";
+    }
+  });
 
   const handleLogout = () => {
     localStorage.removeItem("loggedUser"); // Remove o nome do usuário
@@ -64,7 +85,6 @@ const Sidenav = () => {
       <div className="mt-auto p-4">
         <div className="mb-4 text-sm">
           <p>Usuário: {loggedUser}</p> {/* Exibe o nome do usuário */}
-          <p>Perfil: {userProfile}</p> {/* Exibe o perfil do usuário */}
         </div>
         <button
           onClick={handleLogout}
